@@ -55,7 +55,7 @@ function NewFactForm({ setFacts }) {
   const [text, setText] = useState("");
   const [source, setSource] = useState("");
   const [category, setCategory] = useState("");
-  const textLimit = 100;
+  const textLimit = 200;
 
   async function handleSubmit(e) {
     e.preventDefault();
