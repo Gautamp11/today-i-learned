@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { CATEGORIES } from "./utils/data";
 import supabase from "./supabase";
 import { addFact, updateFact } from "./api/apiFacts";
