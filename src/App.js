@@ -10,7 +10,10 @@ export default function App() {
 
   useEffect(function () {
     async function getFacts() {
-      let { data: facts, error } = await supabase.from("facts").select("*");
+      let { data: facts, error } = await supabase
+        .from("facts")
+        .select("*")
+        .order("created_at", { ascending: false });
       if (error) throw new Error(error);
       setFacts(facts);
     }
@@ -28,7 +31,12 @@ export default function App() {
   return (
     <div className="container">
       <Header handleFactFormOpen={handleFactFormOpen} />
-      {isFactFormOpen && <NewFactForm setFacts={setFacts} />}
+      {isFactFormOpen && (
+        <NewFactForm
+          setFacts={setFacts}
+          handleFactFormOpen={handleFactFormOpen}
+        />
+      )}
       <main className="main">
         <CategoryFilter setFilter={setFilter} />
         <FactList filteredFacts={filteredFacts} setFacts={setFacts} />
@@ -51,7 +59,7 @@ function Header({ handleFactFormOpen }) {
   );
 }
 
-function NewFactForm({ setFacts }) {
+function NewFactForm({ setFacts, handleFactFormOpen }) {
   const [text, setText] = useState("");
   const [source, setSource] = useState("");
   const [category, setCategory] = useState("");
@@ -74,6 +82,7 @@ function NewFactForm({ setFacts }) {
       setText("");
       setSource("");
       setCategory("");
+      handleFactFormOpen();
     } catch (error) {
       console.error("Error submitting form:", error);
     }
