@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { CATEGORIES } from "./utils/data";
 import supabase from "./supabase";
 import { addFact, updateFact } from "./api/apiFacts";
-import { initialFacts } from "./utils/data";
 
 export default function App() {
   const [isFactFormOpen, setIsFactFormOpen] = useState(false);
@@ -25,7 +24,7 @@ export default function App() {
     setIsFactFormOpen((prev) => !prev);
   }
 
-  const filteredFacts = initialFacts.filter((fact) => {
+  const filteredFacts = facts.filter((fact) => {
     return filter === "all" ? facts : fact.category === filter;
   });
 
