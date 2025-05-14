@@ -8,7 +8,7 @@ export async function addFact(fact) {
   return data;
 }
 
-export async function updateFact(factId, voteType) {
+export async function updateFact(factId, voteType, incrementBy) {
   // First, fetch the current value of the voteType column
   const { data: factData, error: fetchError } = await supabase
     .from("facts")
@@ -20,8 +20,8 @@ export async function updateFact(factId, voteType) {
     throw new Error("Failed to fetch current votes: " + fetchError.message);
   }
 
-  // Increment the value of the voteType column
-  const updatedVoteCount = factData[voteType] + 1;
+  // Update vote count (+1 or -1)
+  const updatedVoteCount = factData[voteType] + incrementBy;
 
   // Now, update the voteType column with the incremented value
   const { data, error: updateError } = await supabase

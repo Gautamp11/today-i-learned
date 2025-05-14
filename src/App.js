@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { CATEGORIES } from "./utils/data";
 import supabase from "./supabase";
 import { addFact, updateFact } from "./api/apiFacts";
-import { initialFacts } from "./utils/data";
+import {
+  getVotedFacts,
+  removeVotedFact,
+  setVotedFact,
+} from "./utils/voteUtils";
 
 export default function App() {
   const [isFactFormOpen, setIsFactFormOpen] = useState(false);
@@ -25,7 +29,7 @@ export default function App() {
     setIsFactFormOpen((prev) => !prev);
   }
 
-  const filteredFacts = initialFacts.filter((fact) => {
+  const filteredFacts = facts.filter((fact) => {
     return filter === "all" ? facts : fact.category === filter;
   });
 
@@ -146,17 +150,39 @@ function CategoryFilter({ setFilter }) {
 
 function FactList({ filteredFacts, setFacts }) {
   async function handleVote(factId, voteType) {
-    try {
-      const updatedFact = await updateFact(factId, voteType);
+    const votedFacts = getVotedFacts();
 
-      setFacts((facts) =>
-        facts.map((fact) =>
-          fact.id === factId ? { ...fact, ...updatedFact[0] } : fact
-        )
-      );
-    } catch (error) {
-      console.log(error);
+    const currentVote = votedFacts[factId];
+    let incrementBy = 1;
+
+    //if user already voted for this fact
+    if (currentVote) {
+      //clicked same button -> undo vote
+      if (currentVote === voteType) {
+        incrementBy = -1;
+        removeVotedFact(factId);
+      }
+
+      //clicked different button -> switch vote
+      else {
+        //decrement old vote
+        await updateFact(factId, currentVote, -1);
+        setVotedFact(factId, voteType);
+      }
     }
+    //new vote
+    else {
+      setVotedFact(factId, voteType);
+    }
+
+    //update supabase
+    const updatedFact = await updateFact(factId, voteType, incrementBy);
+
+    setFacts((facts) =>
+      facts.map((fact) =>
+        fact.id === factId ? { ...fact, ...updatedFact[0] } : fact
+      )
+    );
   }
 
   return (
@@ -190,13 +216,37 @@ function FactList({ filteredFacts, setFacts }) {
                 {fact.category}
               </span>
               <div className="vote-buttons">
-                <button onClick={() => handleVote(fact.id, "votesInteresting")}>
+                <button
+                  onClick={() => handleVote(fact.id, "votesInteresting")}
+                  style={{
+                    backgroundColor:
+                      getVotedFacts()[fact.id] === "votesInteresting"
+                        ? "#15803d"
+                        : "",
+                  }}
+                >
                   👍 {fact.votesInteresting}
                 </button>
-                <button onClick={() => handleVote(fact.id, "votesMindblowing")}>
+                <button
+                  onClick={() => handleVote(fact.id, "votesMindblowing")}
+                  style={{
+                    backgroundColor:
+                      getVotedFacts()[fact.id] === "votesMindblowing"
+                        ? "#15803d"
+                        : "",
+                  }}
+                >
                   🤯 {fact.votesMindblowing}
                 </button>
-                <button onClick={() => handleVote(fact.id, "votesFalse")}>
+                <button
+                  onClick={() => handleVote(fact.id, "votesFalse")}
+                  style={{
+                    backgroundColor:
+                      getVotedFacts()[fact.id] === "votesFalse"
+                        ? "#15803d"
+                        : "",
+                  }}
+                >
                   ❌ {fact.votesFalse}
                 </button>
               </div>
