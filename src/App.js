@@ -9,10 +9,12 @@ import {
 } from "./utils/voteUtils";
 
 export default function App() {
+  //states for fact form, facts, and filter
   const [isFactFormOpen, setIsFactFormOpen] = useState(false);
   const [facts, setFacts] = useState([]);
   const [filter, setFilter] = useState("all");
 
+  // fetch facts on mount
   useEffect(function () {
     async function getFacts() {
       let { data: facts, error } = await supabase
@@ -25,23 +27,30 @@ export default function App() {
     getFacts();
   }, []);
 
+  // handle fact form state 
   function handleFactFormOpen() {
     setIsFactFormOpen((prev) => !prev);
   }
 
+  // filtering facts based on filter
   const filteredFacts = facts.filter((fact) => {
     return filter === "all" ? facts : fact.category === filter;
   });
 
   return (
     <div className="container">
+    {/* passing fact form handler to link with share fact button */}
       <Header handleFactFormOpen={handleFactFormOpen} />
+
+      {/* conditional rendering of fact form  */}
       {isFactFormOpen && (
         <NewFactForm
           setFacts={setFacts}
           handleFactFormOpen={handleFactFormOpen}
         />
       )}
+
+      {/* app's main content */}
       <main className="main">
         <CategoryFilter setFilter={setFilter} />
         <FactList filteredFacts={filteredFacts} setFacts={setFacts} />
@@ -65,11 +74,13 @@ function Header({ handleFactFormOpen }) {
 }
 
 function NewFactForm({ setFacts, handleFactFormOpen }) {
+  //states for text input, source, category and limiting text input
   const [text, setText] = useState("");
   const [source, setSource] = useState("");
   const [category, setCategory] = useState("");
   const textLimit = 200;
 
+  // fact submit handler
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -92,6 +103,7 @@ function NewFactForm({ setFacts, handleFactFormOpen }) {
       console.error("Error submitting form:", error);
     }
   }
+  // text input limit handler
   function handleTextChange(e) {
     const newText = e.target.value;
     if (newText.length <= textLimit) {
@@ -128,6 +140,7 @@ function NewFactForm({ setFacts, handleFactFormOpen }) {
   );
 }
 
+//category filter section
 function CategoryFilter({ setFilter }) {
   return (
     <aside>
@@ -148,7 +161,9 @@ function CategoryFilter({ setFilter }) {
   );
 }
 
+//fact list section
 function FactList({ filteredFacts, setFacts }) {
+  // handling voting system
   async function handleVote(factId, voteType) {
     const votedFacts = getVotedFacts();
 
